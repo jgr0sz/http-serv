@@ -6,9 +6,9 @@ import (
 )
 
 // Main listener function for TCP connections to the server
-func listenTCP() {
+func listenTCP(address string) {
 	//TCP listener creation
-	listener, err := net.Listen("tcp", "127.0.0.1:9999")
+	listener, err := net.Listen("tcp", address)
 
 	//Error check
 	if err != nil {
@@ -17,8 +17,8 @@ func listenTCP() {
 
 	//Logging listener status
 	log.Printf("\nListening on\n------------\nType: %s\nAddress: %s\n",
-	listener.Addr().Network(),
-	listener.Addr().String())
+		listener.Addr().Network(),
+		listener.Addr().String())
 	//deferred statement to close our listener at the end of the function
 	defer listener.Close()
 

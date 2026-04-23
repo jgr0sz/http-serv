@@ -5,6 +5,7 @@ import (
 	"log"
 	"net"
 	"strings"
+	"time"
 )
 
 // Defines a serverside response to an HTTP request after performing error checking
@@ -18,6 +19,8 @@ func writeResponse(conn net.Conn, response string) {
 // Extracts the first line of the HTTP request to determine its type/validity
 func connHandler(conn net.Conn) {
 	defer conn.Close()
+	//Connection timeout (5s)
+	conn.SetDeadline(time.Now().Add(5 * time.Second))
 
 	//Instantiation of a reader to go through conn
 	reader := bufio.NewReader(conn)
@@ -36,8 +39,8 @@ func connHandler(conn net.Conn) {
 
 	//GET request case (rudimentary)
 	if headerSections[0] == "GET" {
-		writeResponse(conn, OK + "GET Response of some kind....")
+		writeResponse(conn, OK+"GET Response of some kind....")
 	} else {
-		writeResponse(conn, NOT_ALLOWED + "Response type not allowed.")
+		writeResponse(conn, NOT_ALLOWED+"Response type not allowed.")
 	}
 }
