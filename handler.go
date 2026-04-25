@@ -28,7 +28,7 @@ func parseRequest(reader *bufio.Reader) (*Request, error) {
 	//Read first line for method/path/proto
 	reqLine, err := reader.ReadString('\n');
 	if err != nil {
-		log.Print("Unable to read start line of request: %w", err)
+		return nil, fmt.Errorf("Unable to read start line of request: %w", err)
 	}
 	
 	//Splits reqLine into method/path/proto using their whitespace as a delimiter
@@ -53,7 +53,6 @@ func parseRequest(reader *bufio.Reader) (*Request, error) {
 		if err != nil {
 			return nil, fmt.Errorf("Unable to read header: %w", err)
 		}
-		log.Printf("header line!!!!: %q", headerLine)
 
 		//End of header
 		if headerLine == "\r\n" {
@@ -79,6 +78,10 @@ func parseRequest(reader *bufio.Reader) (*Request, error) {
 		//Dynamic byte array for our body (JSON, XML, etc. etc.) we fill with what would be the body
 		body := make([]byte, contentLength)
 		_, err = io.ReadFull(reader, body)
+
+		if err != nil {
+			return nil, fmt.Errorf("Unable to read body: %w", err)
+		}
 		request.body = string(body)
 	}
 	return request, nil
@@ -89,6 +92,10 @@ func connHandler(conn net.Conn) {
 	//Connection timeout (5s)
 	conn.SetDeadline(time.Now().Add(5 * time.Second))
 
+	//Parses request recieved
 	reader := bufio.NewReader(conn)
-	parseRequest(reader)
+	request, err := parseRequest(reader)
+	if err != nil {
+		log.Printf("Bad request from %s: %v", conn.RemoteAddr(), err)
+	}
 }
