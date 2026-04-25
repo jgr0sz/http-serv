@@ -53,6 +53,7 @@ func parseRequest(reader *bufio.Reader) (*Request, error) {
 		if err != nil {
 			return nil, fmt.Errorf("Unable to read header: %w", err)
 		}
+		log.Printf("header line!!!!: %q", headerLine)
 
 		//End of header
 		if headerLine == "\r\n" {
@@ -60,12 +61,12 @@ func parseRequest(reader *bufio.Reader) (*Request, error) {
 		}
 
 		//Using : as a delimiter, we use SplitN() to obtain two substrings for our key/value map
-		headerParts := strings.SplitN(headerLine, ":", 2)
+		headerParts := strings.SplitN(headerLine, ": ", 2)
 		if len(headerParts) != 2 {
 			return nil, fmt.Errorf("Malformed header: %v", headerParts)
 		}
 		//Trimming spaces, we add our header parts to our request's headers map
-		request.headers[strings.TrimSpace(headerParts[0])] = request.headers[strings.TrimSpace(headerParts[1])]
+		request.headers[strings.TrimSpace(headerParts[0])] = strings.TrimSpace(headerParts[1])
 	}
 
 	//parsing the request body (if present); 
