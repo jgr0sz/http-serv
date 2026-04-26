@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-//Struct encapsulating the contents of HTTP requests for use.
+//Struct representation of an HTTP request
 type Request struct {
 	method string
 	path string
@@ -22,13 +22,12 @@ type Request struct {
 
 //Takes the received request and parses it into struct Request
 func parseRequest(reader *bufio.Reader) (*Request, error) {
-	//Read first line for method/path/proto
 	reqLine, err := reader.ReadString('\n');
 	if err != nil {
 		return nil, fmt.Errorf("Unable to read start line of request: %w", err)
 	}
 	
-	//Splits reqLine into method/path/proto using their whitespace as a delimiter
+	//Splits reqLine into method/path/proto (uses whitespace as delimiter)
 	reqLineParts := strings.Fields(reqLine)
 	//Invalid start line check (first line of the request)
 	if len(reqLineParts) < 3 {
@@ -81,10 +80,10 @@ func parseRequest(reader *bufio.Reader) (*Request, error) {
 	return request, nil
 }
 
-//Parses and 
+//Parses HTTP request into a Request object and responds per user-defined routes.
 func connHandler(conn net.Conn) {
 	defer conn.Close()
-	//Connection timeout (5s)
+	//Connection timeout
 	conn.SetDeadline(time.Now().Add(5 * time.Second))
 
 	//Parses request recieved
