@@ -13,13 +13,10 @@ import (
 
 //Struct encapsulating the contents of HTTP requests for use.
 type Request struct {
-	//Method, path, and proto are all in the first line
 	method string
 	path string
 	proto string
-	//key-value pairs for the headers since they are naturally that way (e.g. Content-Length: 64)
 	headers map[string]string
-	//stores the contents of Content-Length, empty otherwise
 	body string
 }
 
@@ -38,16 +35,14 @@ func parseRequest(reader *bufio.Reader) (*Request, error) {
 		return nil, fmt.Errorf("Malformed request start line: %s", reqLine)
 	}
 
-	//Initializing and assigning the already parsed parts of our request
 	request := &Request{
 		method: reqLineParts[0],
 		path: reqLineParts[1], 
 		proto: reqLineParts[2],
 		headers: map[string]string{},
-		
 	}
 
-	//while-loop to parse the remaining headers of the request
+	//Parsing the remaining headers of the request
 	for {
 		headerLine, err := reader.ReadString('\n')
 		if err != nil {
@@ -59,7 +54,7 @@ func parseRequest(reader *bufio.Reader) (*Request, error) {
 			break
 		}
 
-		//Using : as a delimiter, we use SplitN() to obtain two substrings for our key/value map
+		//Splitting headers using SplitN() to obtain two substrings for our key/value map
 		headerParts := strings.SplitN(headerLine, ": ", 2)
 		if len(headerParts) != 2 {
 			return nil, fmt.Errorf("Malformed header: %v", headerParts)
@@ -68,14 +63,13 @@ func parseRequest(reader *bufio.Reader) (*Request, error) {
 		request.headers[strings.TrimSpace(headerParts[0])] = strings.TrimSpace(headerParts[1])
 	}
 
-	//parsing the request body (if present); 
+	//parsing the request body (if present)
 	if length, exists := request.headers["Content-Length"]; exists {
 		contentLength, err := strconv.Atoi(length)
 		if err != nil {
 			return nil, fmt.Errorf("Invalid Content-Length header: %w", err)
 		}
 
-		//Dynamic byte array for our body (JSON, XML, etc. etc.) we fill with what would be the body
 		body := make([]byte, contentLength)
 		_, err = io.ReadFull(reader, body)
 
@@ -87,6 +81,7 @@ func parseRequest(reader *bufio.Reader) (*Request, error) {
 	return request, nil
 }
 
+//Parses and 
 func connHandler(conn net.Conn) {
 	defer conn.Close()
 	//Connection timeout (5s)
@@ -98,4 +93,5 @@ func connHandler(conn net.Conn) {
 	if err != nil {
 		log.Printf("Bad request from %s: %v", conn.RemoteAddr(), err)
 	}
+	fmt.Print(request)
 }
