@@ -85,7 +85,7 @@ func connHandler(conn net.Conn) {
 	//Connection timeout
 	err := conn.SetDeadline(time.Now().Add(5 * time.Second))
 	if err != nil {
-		log.Printf("Failure to set connection deadline: %w", err)
+		log.Printf("Failure to set connection deadline: %v", err)
 		return
 	}
 
