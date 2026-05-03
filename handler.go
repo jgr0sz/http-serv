@@ -13,31 +13,30 @@ import (
 
 //Struct representation of an HTTP request
 type Request struct {
-	method string
-	path string
-	proto string
+	method  string
+	path    string
+	proto   string
 	headers map[string]string
-	body string
+	body    string
 }
 
 //Takes the received request and parses it into struct Request
 func parseRequest(reader *bufio.Reader) (*Request, error) {
-	reqLine, err := reader.ReadString('\n');
+	reqLine, err := reader.ReadString('\n')
 	if err != nil {
 		return nil, fmt.Errorf("Unable to read start line of request: %w", err)
 	}
-	
+
 	//Splits reqLine into method/path/proto (uses whitespace as delimiter)
 	reqLineParts := strings.Fields(reqLine)
-	//Invalid start line check (first line of the request)
 	if len(reqLineParts) < 3 {
 		return nil, fmt.Errorf("Malformed request start line: %s", reqLine)
 	}
 
 	request := &Request{
-		method: reqLineParts[0],
-		path: reqLineParts[1], 
-		proto: reqLineParts[2],
+		method:  reqLineParts[0],
+		path:    reqLineParts[1],
+		proto:   reqLineParts[2],
 		headers: map[string]string{},
 	}
 
@@ -84,13 +83,19 @@ func parseRequest(reader *bufio.Reader) (*Request, error) {
 func connHandler(conn net.Conn) {
 	defer conn.Close()
 	//Connection timeout
-	conn.SetDeadline(time.Now().Add(5 * time.Second))
+	err := conn.SetDeadline(time.Now().Add(5 * time.Second))
+	if err != nil {
+		log.Printf("Failure to set connection deadline: %w", err)
+		return
+	}
 
 	//Parses request recieved
 	reader := bufio.NewReader(conn)
 	request, err := parseRequest(reader)
 	if err != nil {
 		log.Printf("Bad request from %s: %v", conn.RemoteAddr(), err)
+		return
 	}
-	fmt.Print(request)
+	log.Printf("Request: %+v", request)
+	writeResponse(conn, 200, "OK", "REQUEST RECEIVED!!!!")
 }
