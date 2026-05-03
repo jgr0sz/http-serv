@@ -1,6 +1,5 @@
 package main
 
-//Struct representation of an HTTP response
 type Response struct {
 	status     int
 	statusText string
@@ -8,12 +7,22 @@ type Response struct {
 	body       string
 }
 
-//Function that defines the behavior at a certain endpoint
 type HandlerFunc func(*Request) *Response
 
-//Struct representation of a route
 type Route struct {
 	method  string
 	path    string
 	handler HandlerFunc
+}
+
+var routes []Route
+
+//Adds routes to registry
+func addRoute(method, path string, handler HandlerFunc) {
+	routes = append(routes, Route{method, path, handler})
+}
+
+//Checks request data, providing a response by invoking the stored route
+func invokeRoute(req *Request) *Response {
+	return &Response{}
 }
