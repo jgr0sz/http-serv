@@ -52,12 +52,11 @@ func parseRequest(reader *bufio.Reader) (*Request, error) {
 			break
 		}
 
-		//Splitting headers using SplitN() to obtain two substrings for our key/value map
+		//Substrings added to header hash table
 		headerParts := strings.SplitN(headerLine, ": ", 2)
 		if len(headerParts) != 2 {
 			return nil, fmt.Errorf("Malformed header: %v", headerParts)
 		}
-		//Trimming spaces, we add our header parts to our request's headers map
 		request.headers[strings.TrimSpace(headerParts[0])] = strings.TrimSpace(headerParts[1])
 	}
 
@@ -97,5 +96,7 @@ func connHandler(conn net.Conn) {
 		return
 	}
 	log.Printf("Request: %+v", request)
-	writeResponse(conn, 200, "OK", "REQUEST RECEIVED!!!!")
+	//The request is sent to be compared between defined routes, after which a response is delivered
+	response := invokeRoute(request)
+	writeResponse(conn, response)
 }

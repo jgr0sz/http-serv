@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"strings"
 )
 
 //Main listener function for TCP connections to the server
@@ -31,13 +32,19 @@ func listenTCP(address string) {
 }
 
 //Helper function for HTTP responses
-func writeResponse(conn net.Conn, status int, statusText string, body string) {
-	response := fmt.Sprintf(
-		"HTTP/1.1 %d %s\r\nContent-Length: %d\r\nContent-Type: text/plain\r\n\r\n%s",
-		status, statusText, len(body), body,
-	)
-	_, err := conn.Write([]byte(response))
+func writeResponse(conn net.Conn, response *Response) {
+	//Constructing response string
+	var sb strings.Builder
+
+	fmt.Fprintf(&sb, "HTTP/1.1 %d %s\r\n", response.status, response.statusText)
+	for k, v := range response.headers {
+		fmt.Fprintf(&sb, "%s: %s\r\n", k, v)
+	}
+	fmt.Fprintf(&sb, "Content-Length: %d\r\n", len(response.body))
+	fmt.Fprintf(&sb, "\r\n%s", response.body)
+
+	_, err := conn.Write([]byte(sb.String()))
 	if err != nil {
-		log.Printf("Unable to write HTTP response, contents:\n%s", response)
+		log.Printf("Unable to write HTTP response, contents:\n%s", sb.String())
 	}
 }
